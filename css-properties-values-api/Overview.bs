@@ -42,6 +42,7 @@ spec:css-values-4;
 		text:cap
 	type:dfn
 		text:identifier
+spec:cssom-1; type:interface; text:CSS
 spec:dom;
 	type:interface; text:Document
 	type:dfn; text:shadow tree
@@ -278,12 +279,13 @@ the computed value is one of the following:
 		</pre>
 
 		and finally a document at <code>/index.html</code>:
-		<pre class='lang-html'>
-		&lt;link href="/style/foo/foo.css" rel="stylesheet" type="text/css">
-		&lt;link href="/style/bar/bar.css" rel="stylesheet" type="text/css">
-		&lt;div style="background-image: var(--url-foo), var(--url-bar);">
-		&lt;/div>
-		</pre>
+
+		<xmp class='lang-html'>
+			<link href="/style/foo/foo.css" rel="stylesheet" type="text/css">
+			<link href="/style/bar/bar.css" rel="stylesheet" type="text/css">
+			<div style="background-image: var(--url-foo), var(--url-bar);">
+			</div>
+		</xmp>
 
 		Here, the ''var(--url-foo)'' reference would produce a URL that resolves against
 		<code>/style/foo</code>, and the ''var(--url-bar)'' reference would produce a URL that resolves
@@ -425,14 +427,14 @@ with a <<length>> or <<length-percentage>> syntax component:
 <div class='example'>
 	For example, given this registration:
 
-	<pre class='lang-javascript'>
+	<xmp class='lang-javascript'>
 	CSS.registerProperty({
 	  name: "--my-font-size",
-	  syntax: "&lt;length>",
+	  syntax: "<length>",
 	  initialValue: "0px",
 	  inherits: false
 	});
-	</pre>
+	</xmp>
 
 	the following will produce a dependency cycle:
 
@@ -701,8 +703,8 @@ as arguments of the same names.
 	execute these steps:
 
 	1. Let |property set|
-		be the value of the
-		<a>current global object's</a>
+		be the value of [=this's=] 
+		[=relevant global object's=]
 		<a>associated <code>Document</code></a>'s
 		{{[[registeredPropertySet]]}} slot.
 
@@ -825,14 +827,14 @@ the property becomes [=invalid at computed-value time=]
 
 	If we call:
 
-	<pre class='lang-javascript'>
+	<xmp class='lang-javascript'>
 	CSS.registerProperty({
 		name: "--my-color",
-		syntax: "&lt;color>",
+		syntax: "<color>",
 		initialValue: "black",
 		inherits: false
 	});
-	</pre>
+	</xmp>
 
 	the parsing doesn't significantly change,
 	regardless of whether the registration occurs before or after the stylesheet above.
@@ -1174,13 +1176,11 @@ Parsing The Syntax String {#parsing-syntax}
 CSSOM {#cssom}
 ==============
 
-<div class=note>
-	The value specified for a registered custom property is not
-	interpreted until computed-value time. This means that only APIs that
-	retrieve computed values are affected. Other APIs must ignore the
-	{{[[registeredPropertySet]]}} slot of the associated {{Document}}, and
-	treat all custom properties as unregistered.
-</div>
+Note: The value specified for a registered custom property 
+is not interpreted until computed-value time. 
+This means that only APIs that retrieve computed values are affected. 
+Other APIs must ignore the {{[[registeredPropertySet]]}} slot of the associated {{Document}}, 
+and treat all custom properties as unregistered.
 
 The <dfn interface>CSSPropertyRule</dfn> Interface {#the-css-property-rule-interface}
 -----------------------------------------------------------------------------
