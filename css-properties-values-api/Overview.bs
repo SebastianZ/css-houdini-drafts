@@ -703,7 +703,7 @@ as arguments of the same names.
 	execute these steps:
 
 	1. Let |property set|
-		be the value of [=this's=] 
+		be the value of [=this's=]
 		[=relevant global object's=]
 		<a>associated <code>Document</code></a>'s
 		{{[[registeredPropertySet]]}} slot.
@@ -1176,10 +1176,10 @@ Parsing The Syntax String {#parsing-syntax}
 CSSOM {#cssom}
 ==============
 
-Note: The value specified for a registered custom property 
-is not interpreted until computed-value time. 
-This means that only APIs that retrieve computed values are affected. 
-Other APIs must ignore the {{[[registeredPropertySet]]}} slot of the associated {{Document}}, 
+Note: The value specified for a registered custom property
+is not interpreted until computed-value time.
+This means that only APIs that retrieve computed values are affected.
+Other APIs must ignore the {{[[registeredPropertySet]]}} slot of the associated {{Document}},
 and treat all custom properties as unregistered.
 
 The <dfn interface>CSSPropertyRule</dfn> Interface {#the-css-property-rule-interface}
