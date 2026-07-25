@@ -553,14 +553,28 @@ as if {{registerProperty()}} had been called with equivalent parameters.
 The syntax of ''@property'' is:
 
 	<pre class="prod def" nohighlight>
-	@property <<custom-property-name>> {
+	@property <<custom-property-name>># {
 		<<declaration-list>>
 	}
 	</pre>
 
-A valid ''@property'' rule represents a [=custom property registration=],
-with the property name being the serialization of the <<custom-property-name>>
-in the rule's prelude.
+A valid ''@property'' rule represents a [=custom property registration=]
+for each <<custom-property-name>> in the rule's prelude,
+with the property name being the serialization of that <<custom-property-name>>
+and all other fields identical.
+
+<div class='example'>
+	The following rule registers three properties
+	with the same syntax, inheritance behavior, and initial value:
+
+	<pre class='lang-css'>
+	@property --width, --height, --depth {
+		syntax: "&lt;length>";
+		inherits: false;
+		initial-value: 0px;
+	}
+	</pre>
+</div>
 
 ''@property'' rules require a '@property/syntax' and '@property/inherits' descriptor;
 if either are missing,
@@ -574,7 +588,8 @@ Unknown descriptors are invalid and ignored,
 but do not invalidate the ''@property'' rule.
 
 Note: As specified in [[#determining-registration]],
-if multiple valid ''@property'' rules are defined for the same <<custom-property-name>>,
+if multiple valid ''@property'' rules represent a registration
+for the same <<custom-property-name>>,
 the last one in stylesheet order "wins".
 A custom property registration from {{registerProperty()|CSS.registerProperty()}}
 further wins over any ''@property'' rules
@@ -1186,6 +1201,10 @@ The <dfn interface>CSSPropertyRule</dfn> Interface {#the-css-property-rule-inter
 -----------------------------------------------------------------------------
 
 The {{CSSPropertyRule}} interface represents an ''@property'' rule.
+
+Issue(w3c/csswg-drafts#14227):
+The CSSOM for multi-name ''@property'' rules
+has not been resolved on by the CSSWG.
 
 <pre class='idl' export>
 [Exposed=Window]
