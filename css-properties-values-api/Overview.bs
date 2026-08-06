@@ -115,9 +115,12 @@ that contains all the data necessary to treat it like a real property.
 It's a [=struct=] consisting of:
 
 * a property name (a [=custom property name string=])
-* a syntax (a [=syntax string=])
-* an inherit flag (a [=boolean=])
-* optionally, an initial value (a [=string=] which successfully [=CSS/parses=] according to the syntax)
+* optionally, a syntax (a [=syntax string=]) 
+	(defaulting to <code>"*"</code>)
+* optionally, an inherit flag (a [=boolean=]) 
+	(defaulting to <code>true</code>)
+* optionally, an initial value (a CSS value which successfully [=CSS/parses=] according to the syntax) 
+	(defaulting to the [=guaranteed-invalid value=])
 
 If the {{Document}}’s {{[[registeredPropertySet]]}} slot
 [=set/contains=] a record with the [=custom property’s=] name,
@@ -576,13 +579,10 @@ and all other fields identical.
 	</pre>
 </div>
 
-''@property'' rules require a '@property/syntax' and '@property/inherits' descriptor;
-if either are missing,
-the entire rule is invalid and must be ignored.
-The '@property/initial-value' descriptor is optional
-only if the syntax is the [=universal syntax definition=],
-otherwise the descriptor is required;
-if it's missing, the entire rule is invalid and must be ignored.
+While the <<custom-property-name>> is required,
+all of the descriptors are optional.
+When omitted,
+it matches the behavior of an <em>unregistered</em> [=custom property=].
 
 Unknown descriptors are invalid and ignored,
 but do not invalidate the ''@property'' rule.
@@ -602,15 +602,12 @@ The '@property/syntax' Descriptor {#the-syntax-descriptor}
 	Name: syntax
 	Value: <<string>>
 	For: @property
-	Initial: n/a (see prose)
+	Initial: "*"
 	</pre>
 
 Specifies the syntax of the [=custom property registration=]
 represented by the ''@property'' rule,
 controlling how the property's value is parsed at [=computed value=] time.
-
-The '@property/syntax' descriptor is required for the ''@property'' rule to be valid;
-if it's missing, the ''@property'' rule is invalid.
 
 If the provided string is not a valid [=syntax string=]
 (if it returns failure when [=consume a syntax definition=] is called on it),
@@ -624,15 +621,12 @@ The '@property/inherits' Descriptor {#inherits-descriptor}
 	Name: inherits
 	Value: true | false
 	For: @property
-	Initial: n/a (see prose)
+	Initial: true
 	</pre>
 
 Specifies the inherit flag of the [=custom property registration=]
 represented by the ''@property'' rule,
 controlling whether or not the property inherits by default.
-
-The '@property/inherits' descriptor is required for the ''@property'' rule to be valid;
-if it's missing, the ''@property'' rule is invalid.
 
 
 The '@property/initial-value' Descriptor {#initial-value-descriptor}
@@ -642,27 +636,17 @@ The '@property/initial-value' Descriptor {#initial-value-descriptor}
 	Name: initial-value
 	Value: <<declaration-value>>?
 	For: @property
-	Initial: the [=guaranteed-invalid value=] (but see prose)
+	Initial: the [=guaranteed-invalid value=]
 	</pre>
 
 Specifies the initial value of the [=custom property registration=]
 represented by the ''@property'' rule,
 controlling the property’s [=initial value=].
 
-If the value of the '@property/syntax' descriptor is the [=universal syntax definition=],
-then the '@property/initial-value' descriptor is optional.
-If omitted, the [=initial value=] of the property is the [=guaranteed-invalid value=].
-
-Otherwise,
-if the value of the '@property/syntax' descriptor is not the [=universal syntax definition=],
-the following conditions must be met for the ''@property'' rule to be valid:
-
-	* The '@property/initial-value' descriptor must be present.
-	* The '@property/initial-value' descriptor's value must [=consume a syntax definition|parse successfully=]
-		according to the grammar specified by the [=syntax definition=].
-	* The '@property/initial-value' must be [=computationally independent=].
-
-If the above conditions are not met, the ''@property'' rule is invalid.
+If specified,
+the value of the '@property/initial-value' descriptor
+must successfully [=CSS/parse=] according to the rule's '@property/syntax' descriptor,
+or else the descriptor is invalid and ignored.
 
 
 <!--
@@ -685,8 +669,8 @@ the {{CSS}} object is extended with a {{registerProperty()}} method:
 dictionary PropertyDefinition {
 	required DOMString name;
 	         DOMString syntax       = "*";
-	required boolean   inherits;
-	         DOMString initialValue;
+	         boolean   inherits     = true;
+	         DOMString initialValue; 
 };
 
 partial namespace CSS {
@@ -737,38 +721,25 @@ as arguments of the same names.
 		If it returns failure, <a>throw</a> a {{SyntaxError}}.
 		Otherwise, let |syntax definition| be the returned <a>syntax definition</a>.
 
-	4. If |syntax definition| is the <a>universal syntax definition</a>,
-		and |initialValue| is not present,
-		let |parsed initial value| be empty.
-		This must be treated identically to the "default" initial value of custom properties,
-		as defined in [[!css-variables]].
-		Skip to the next step of this algorithm.
+	4. If |initialValue| is not present,
+		let |parsed initial value| be the [=guaranteed-invalid value=].
 
-		Otherwise,
-		if |syntax definition| is the <a>universal syntax definition</a>,
-		[=CSS/parse=] |initialValue| according to <code><<declaration-value>>?</code>.
-		If this fails,
-		<a>throw</a> a {{SyntaxError}}
-		and exit this algorithm.
-		Otherwise,
-		let |parsed initial value| be the parsed result.
-		Skip to the next step of this algorithm.
+		Otherwise:
 
-		Otherwise, if |initialValue| is not present,
-		<a>throw</a> a {{SyntaxError}}
-		and exit this algorithm.
+		* [=CSS/parse=] |initialValue| according to <code><<declaration-value>>?</code>
+			if |syntax definition| is the [=universal syntax definition=],
+			and according to |syntax definition| otherwise.
 
-		Otherwise,
-		[=CSS/parse=] {{PropertyDefinition/initialValue}}
-		according to |syntax definition|.
-		If this fails,
-		<a>throw</a> a {{SyntaxError}}
-		and exit this algorithm.
+		* If parsing returns failure,
+			<a>throw</a> a {{SyntaxError}}
+			and exit this algorithm.
+			Otherwise,
+			let |parsed initial value| be the parsed result.
 
-		Otherwise, let |parsed initial value| be the parsed result.
-		If |parsed initial value| is not <a>computationally independent</a>,
-		<a>throw</a> a {{SyntaxError}}
-		and exit this algorithm.
+		* If |parsed initial value| is not <a>computationally independent</a>,
+			<a>throw</a> a {{SyntaxError}}
+			and exit this algorithm.
+
 
 	5. Set |inherit flag| to the value of |inherits|.
 
@@ -877,7 +848,11 @@ following members:
 ::  True if this custom property should inherit down the DOM tree; False otherwise.
 
 :   <dfn dict-member for=PropertyDefinition>initialValue</dfn>
-::  The initial value of this custom property.
+::  A string representing the initial value of this custom property.
+
+Only the {{PropertyDefinition/name}} is required;
+the other components default to how an unregistered [=custom property=] works.
+(Accepting any value, inheriting, and using the [=guaranteed-invalid value=] by default.)
 
 
 <!--
